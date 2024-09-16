@@ -75,3 +75,24 @@ end;
 $$;
 call poblar_database_clientes();
 
+
+create or replace function transacciones_total_mes(p_mes int, p_cliente_identificacion varchar)
+returns float
+language plpgsql
+as $$
+declare
+    v_total_pagos float := 0;
+    v_cliente_id int;
+    v_pago float;
+begin
+    select id into v_cliente_id from clientes where identificacion = p_cliente_identificacion;
+    for v_pago in select pagos.total from pagos inner join servicios on pagos.servicion_id = servicios.id where servicios.cliente_id = v_cliente_id and extract(month from pagos.fecha_pago) = p_mes
+    loop
+        v_total_pagos := v_total_pagos + v_pago;
+    end loop;
+
+    return v_total_pagos;
+end;
+$$;
+
+select transacciones_total_mes(9,'663573201');
